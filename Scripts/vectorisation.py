@@ -79,7 +79,7 @@ def get_W2V_vectors(corpus, vectorizer, file_path, vector_size=100, window=5, mi
     for doc in corpus :
         corpus_W2V.append(doc.split())
     # Entraînement du modèle Word2Vec
-    model = Word2Vec(corpus_W2V, vector_size=vector_size, window=window, min_count=min_count, workers=workers)
+    model = Word2Vec(corpus_W2V, vector_size=vector_size, window=window, min_count=min_count, workers=workers, sg=1, epochs=50)
     # On récupère les mots qui constituent nos précédents vecteurs
     unique_words = list(vectorizer.get_feature_names_out())
     # Pour chaque mot, on extrait son vecteur avec le modèle que l'on vient d'entraîner
