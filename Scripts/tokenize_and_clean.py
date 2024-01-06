@@ -21,6 +21,6 @@ def load_corpus(path):
 
 def tokenize(corpus):
     corpus = load_corpus("../Corpus/*/*.txt")
-    return [re.sub("[^a-zA-Z\s]", "", text).lower() for text in corpus]
+    return [re.sub("[^a-zA-Z\séèêàôïö]", "", text).lower() for text in corpus]
 
 
