@@ -35,6 +35,12 @@ def load_stopwords(path):
 def get_PPMI_vectors(corpus,file_path, stopwords,min_df=5, max_df=0.50, max_features=None):
     vectorizer = CountVectorizer(min_df=min_df, max_df=max_df, max_features=max_features, stop_words=stopwords)
     X = vectorizer.fit_transform(corpus)
+    sum_words = X.sum(axis=0) 
+    words_freq = [(word, sum_words[0, idx]) for word, idx in vectorizer.vocabulary_.items()]
+    words_freq = sorted(words_freq, key = lambda x: x[1], reverse=True)
+    with open("../utils/vocabulary.txt", "w") as file:
+        for word in words_freq :
+            file.write(f"{word[0]}, {word[1]} \n")
     Xc = (X.T * X)  # Matrice de cooccurrence
     Xc.setdiag(0)   # Suppression de la diagonale (fréquence du mot avec lui-même)
     feature_names = vectorizer.get_feature_names_out()
@@ -60,9 +66,9 @@ def reduce_dim_with_pca(vectors, vectorizer, nb_dim=10):
     pca = PCA(n_components=nb_dim)
     pca_results = pca.fit_transform(vectors)
     words = vectorizer.get_feature_names_out()
-    word_pca = pd.DataFrame(pca_results, columns=[f'PCA{i+1}' for i in range(nb_dim)])
+    word_pca = pd.DataFrame(pca_results, columns=[f"PCA{i+1}" for i in range(nb_dim)])
     word_pca.index = words
-    with open(f"../Vectors/pca_vectors_{nb_dim}", 'w') as file:
+    with open(f"../Vectors/pca_vectors_{nb_dim}.txt", "w") as file:
         for word, values in word_pca.iterrows():
             line = f"{word}," + ",".join(map(str, values))
             file.write(line + "\n")
@@ -89,7 +95,7 @@ def get_W2V_vectors(corpus, vectorizer, file_path, vector_size=100, window=5, mi
             word_vectors[word] = model.wv[word]
         else:
             pass
-    with open(f"{file_path}_{vector_size}.txt", 'w', encoding='utf-8') as file:
+    with open(f"{file_path}_{vector_size}.txt", "w") as file:
         for word, vector in word_vectors.items():
             vector_str = ",".join(map(str, vector))
             file.write(f"{word},{vector_str}\n")
@@ -104,8 +110,8 @@ def main():
     corpus = tokenize(load_corpus("../Corpus/*.txt"))
     fr_stop = load_stopwords("../utils/stop_words_fr.txt")
     ppmi_vectors, vectorizer = get_PPMI_vectors(corpus, "../Vectors/PPMI_vectors.txt",fr_stop, min_df=5, max_df=0.50, max_features=3500)
-    reduce_dim_with_pca(ppmi_vectors, vectorizer, nb_dim=10)
-    get_W2V_vectors(corpus, vectorizer, "../Vectors/W2V_vectors", vector_size=100, window=5, min_count=1, workers=4)
+    reduce_dim_with_pca(ppmi_vectors, vectorizer, nb_dim=100)
+    get_W2V_vectors(corpus, vectorizer, "../Vectors/W2V_vectors", vector_size=10, window=5, min_count=1, workers=4)
 
 main()
 '''   
